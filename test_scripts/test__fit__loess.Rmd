@@ -66,7 +66,7 @@ ggplot( old_faithful,
 
 ```{r test_fit_loess}
 results <-                                        # Fit the loess.
-  fit_loess( waiting_time ~ eruption_length,
+  fit_loess( waiting ~ eruption_length,
              old_faithful )
 
 smooth   <- results$smooth 

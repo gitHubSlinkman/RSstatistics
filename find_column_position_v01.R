@@ -6,12 +6,16 @@
 #' tibble.
 #'
 #' @param data      - a data frame ot tibble.
-#' @param variable  - a qouted sring that is the name of a variable.
+#' @param variable  - a quoted string that is the name of a variable.
 #'
-#' @return
+#' @return an integer column posirion
 #' @export
 #'
 #' @examples
+#' 
+
+library( tidyverse )                    # I live in the tidyverse environment.
+
 find_column_position <- 
   function( data, variable )
   {
