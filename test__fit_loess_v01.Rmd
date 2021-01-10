@@ -1,0 +1,17 @@
+---
+title: "Test: fit_loess"
+output: html_notebook
+---
+
+## Load packages
+```{r}
+library( titdyverse )                   # I live in the tidyverse.
+```
+
+## Load functions
+
+```{r}
+source("D:/R-Projects/RStatistics/fit_loess_v01.R")
+```
+
+

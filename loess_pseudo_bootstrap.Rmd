@@ -1,9 +1,0 @@
----
-title: "Loes pseudo-bootstrap"
-output: html_notebook
----
-
-library( tidyverse )
-
-
-

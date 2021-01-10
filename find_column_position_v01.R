@@ -17,7 +17,7 @@
 library( tidyverse )                    # I live in the tidyverse environment.
 
 find_column_position <- 
-  function( data, variable )
+  function( data, str_variable )
   {
     #######################################################################
     # Get the variable names of the data object.
@@ -29,14 +29,13 @@ find_column_position <-
     # Find position column position.  If it does not match throw an error
     #######################################################################
     
-    position <-match( variable, 
+    position <-match( str_variable, 
                       vnames,
                       nomatch = 0 )
     
     if( position == 0)
       stop(  paste( "Column position for variable",
-                    variable, 
-                    "not found." ))
-    
+                    str_variable, 
+                    "not found in data source." ))
     position
   }

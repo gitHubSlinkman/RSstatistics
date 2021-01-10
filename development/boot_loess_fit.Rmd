@@ -1,0 +1,151 @@
+---
+title: "Researching an approach to the using the pseudo-bootstrap to computed confidence interval lines for loess"
+author: "Craig Slinkman"
+date: "1/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Prepare environment.
+
+```{r}
+library( tidyverse )                    # I live in the tidyverse environment.
+library( cowplot )                      # I prefer the cowplot plot defaults.
+```
+
+## Obtaining the data and putting 
+
+In the chunk below we change the data object from an R-dataframe to a R and tidyverse tibbles.  A [tibble](https://tibble.tidyverse.org/articles/tibble.html) is essentially a data frame optimized for data science.  
+
+A tibble has the following differences from a dataframe:
+
+* It never changes an input’s type (i.e., no more stringsAsFactors = FALSE!).
+
+* A tibble is easier to use because it to list columns.  For example consider
+the following case:
+
+```{r}
+example <-                              # Create a tibble populated with data.
+  tibble(x = 1:3, 
+         y = list(1:5, 1:10, 1:20))
+
+example                                 # Display tibble.
+```
+
+List-columns are often created by **tidyr::nest()**, but they can be useful to create by hand.
+
+* When you list a tibble name in the script as aboce it prints only the first 10 rows of data and only those columns that can appear in the space available.  No wrap around printing.  If not all of the data is shown then the number of variables and number of rows are displayed along with the names of the variables that could not be displaed.
+
+* It never adjusts the names of variables:
+
+```{r}
+names(data.frame(`crazy name` = 1))     # A name in data.frame is changed.
+                                       
+  
+names(tibble(`crazy name` = 1))         #  But not in a tibble!
+```
+
+* It evaluates its arguments lazily and sequentially:
+
+```{r}
+tibble(x = 1:5, y = x ^ 2)              # Define tibble.
+
+tibble                                  # Display tibble.
+```  
+
+* It never uses row.names(). The whole point of tidy data is to store variables in a consistent way. So it never stores a variable as special attribute.
+
+* It only recycles vectors of length 1. This is because recycling vectors of greater lengths is a frequent source of bugs.
+
+In the code chunk below we coerce a dataframe to a tibble.  We also use R-package *dplyr* to rename the column names because the ones in the R data.frame are misleading.
+
+The goal of this study is to predict how long the wait will be to the next eruption given we know how long the last eruption lasted.  
+
+* The *response variable* is $interval$ is the time between the end of the last eruption till the start of the next eruption measured in minutes.
+
+* The *predictor variable* $length$ is the length of the last eruption mesured ib minutes.
+
+```{r}
+data( faithful )                       # Specify file to use
+
+faithful <-                            
+  as_tibble( faithful ) %>%            # Change data.frame to tibble
+    rename( "length" = eruptions,      # Chang variable names to make the
+            "interval" = waiting )     # names more descriptive.
+
+faithful                               # Verify tibble
+```
+
+## If you got it - plot it.
+
+```{r}
+faithful %>% 
+  ggplot( aes( x = length,
+               y = interval )) +
+  geom_point() +
+  geom_smooth( method = "lm",
+               se     = FALSE ) +
+  geom_smooth( method = "loess",
+               color  = "red" ) +
+  xlab( "Length of prior eruption in minutes" ) +
+  ylab( "Interval to next eruption in minutes") +
+  ggtitle( "Old faithful eruption data" ) +
+  theme_cowplot()
+  
+```
+
+
+The blue kine if the OLS (ordinary least squares line).  The red line is loess line.  It is a locale regression line. [loess](https://en.wikipedia.org/wiki/Local_regression) is Local regression or local polynomial regression, also known as moving regression, is a generalization of moving average and polynomial regression. Its most common methods, initially developed for scatterplot smoothing, are LOESS (locally estimated scatterplot smoothing) and LOWESS (locally weighted scatterplot smoothing), both pronounced /ˈloʊɛs/. They are two strongly related non-parametric regression methods that combine multiple regression models in a k-nearest-neighbor-based meta-model. 
+
+We use the loess line o check for nonminearity in the data.  We do this by plotting the loess line and comparing it to the linear regression mine.  The darg grey area is standard error of the estimate of the loess regression.  Note that OLS line paertially falls out of the gery area.  this is an insication that the model may not be linear in the predictor variable $interval$.
+
+## Using the R-function loess
+
+It is often useful to estimate the loess line by using the R's loess function.  This gives us more control and we will need that to compute the standard error of the loess line.
+
+A cakk to the loess function to fit a loess line is shown below.
+
+```{r}
+fit <-                                  # Fit the loess line,
+  loess( interval ~ length,             # regress interval against length
+         data = faithful,               # The data source
+         family = "symmetric",          # Guard against outliers,
+         span = 0.75 )                  # Use 75% of the data for each 
+                                        # computation.
+
+str(fit)                                # Display the internal structure of 
+                                        # the fit loess object.
+
+fit                                     # Default display from the fit.
+
+```
+
+## Plot loess smooth with data points
+
+```{r}
+
+smoothed  <- fit$fitted                 # Get smoothed values.                    
+
+faithful <-                             # Add smoothed values to faitful tibble.
+  faithful %>% 
+    add_column( smoothed, .after = 2 )
+
+faithful                                # Verify column was added
+
+faithful %>% 
+  ggplot( aes( x = length,
+               y = interval )) +
+  geom_point() +
+  geom_line( aes( x = length,
+                  y = smoothed ),
+                  color = "red" )
+
+```
+
+
+
+
+
