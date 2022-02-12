@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library( tidyverse )                    # I live in the tidyverse environment.
+library( simpleboot )                   # For simple bootstraps.
 library( cowplot )                      # I prefer the cowplot plot defaults.
 ```
 
@@ -135,16 +136,42 @@ faithful <-                             # Add smoothed values to faitful tibble.
 
 faithful                                # Verify column was added
 
-faithful %>% 
-  ggplot( aes( x = length,
+p <-
+  ggplot( faithful,
+          aes( x = length,
                y = interval )) +
   geom_point() +
   geom_line( aes( x = length,
                   y = smoothed ),
                   color = "red" )
-
+  p
+  
 ```
 
+## Bootstrap loess plot
+
+```{r}
+boot <- 
+  loess.boot( fit, 
+              R = 100, 
+              rows = TRUE, 
+              new.xpts = NULL, 
+              ngrid = 100,
+              weights = NULL )
+```
+
+
+```{r}
+
+boot_list <- boot[[2]]
+boot_list
+
+
+
+
+
+
+```
 
 
 
